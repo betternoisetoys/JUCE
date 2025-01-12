@@ -1,4 +1,8 @@
 /*
+    This file has been modified!!
+    Change: Match OpenSSL Endianess
+    Author: BeNT/Kaylee
+
   ==============================================================================
 
    This file is part of the JUCE library.
@@ -328,9 +332,16 @@ bool BlowFish::apply (void* data, size_t size, void (BlowFish::*op) (uint32&, ui
     auto n = size / 8u;
     auto* ptr = reinterpret_cast<AlignedAccessHelper*> (data);
 
+    // Modified to match OpenSSL Endianess  - Kaylee
     for (size_t i = 0; i < n; ++i)
-        (this->*op) (ptr[i].data[0], ptr[i].data[1]);
-
+    {
+        // (this->*op) (ptr[i].data[0], ptr[i].data[1]);
+        uint32 a = ByteOrder::swapIfLittleEndian(ptr[i].data[0]);
+        uint32 b = ByteOrder::swapIfLittleEndian(ptr[i].data[1]);
+        (this->*op) (a, b);
+        ptr[i].data[0] = ByteOrder::swapIfLittleEndian(a);
+        ptr[i].data[1] = ByteOrder::swapIfLittleEndian(b);
+    }
     return true;
 }
 
